@@ -4,7 +4,7 @@
 %bcond bootstrap 1
 
 %global debug_package %{nil}
-%global module resourcemanager/dns/armdns
+%global module resourcemanager/resourcegraph/armresourcegraph
 
 %if %{with bootstrap}
 %global __requires_exclude %{?__requires_exclude:%{__requires_exclude}|}^golang\\(.*\\)$
@@ -12,7 +12,7 @@
 
 # https://github.com/Azure/azure-sdk-for-go
 %global goipath         github.com/Azure/azure-sdk-for-go/sdk/%{module}
-Version:                1.1.0
+Version:                0.9.0
 %global tag             sdk/%{module}/v%{version}
 %global distprefix      %{nil}
 
