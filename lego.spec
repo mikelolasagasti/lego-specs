@@ -69,7 +69,8 @@ for test in "TestDNSProviderManual" "TestLookupNameserversOK" "TestFindZoneByFqd
 awk -i inplace '/^func.*'"$test"'\(/ { print; print "\tt.Skip(\"disabled failing test\")"; next}1' $(grep -rl $test)
 done
 # TODO Review lightsail, route53, otc
-%gocheck -d github.com/go-acme/lego/v4/providers/dns/conoha \
+%gocheck -d github.com/go-acme/lego/v4/providers/dns/auroradns \
+         -d github.com/go-acme/lego/v4/providers/dns/conoha \
          -d github.com/go-acme/lego/v4/providers/dns/constellix/internal \
          -d github.com/go-acme/lego/v4/providers/dns/dynu/internal \
          -d github.com/go-acme/lego/v4/providers/dns/lightsail \
