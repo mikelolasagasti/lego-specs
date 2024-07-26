@@ -1,0 +1,117 @@
+From db2ab55cdd6a979168ef96dc178568d5120430eb Mon Sep 17 00:00:00 2001
+From: Mikel Olasagasti Uranga <mikel@olasagasti.info>
+Date: Thu, 25 Jul 2024 16:58:21 +0200
+Subject: [PATCH] chore: bump to github.com/vultr/govultr/v3 (#2235)
+
+Co-authored-by: Fernandez Ludovic <ldez@users.noreply.github.com>
+---
+ go.mod                            |  2 +-
+ go.sum                            |  4 ++--
+ providers/dns/vultr/vultr.go      | 24 +++++++++++++++++-------
+ providers/dns/vultr/vultr_test.go |  2 +-
+ 4 files changed, 21 insertions(+), 11 deletions(-)
+
+diff --git a/go.mod b/go.mod
+index 65bb9ce8ec..12165a5f1b 100644
+--- a/go.mod
++++ b/go.mod
+@@ -75,7 +75,7 @@ require (
+ 	github.com/ultradns/ultradns-go-sdk v1.6.1-20231103022937-8589b6a
+ 	github.com/urfave/cli/v2 v2.27.2
+ 	github.com/vinyldns/go-vinyldns v0.9.16
+-	github.com/vultr/govultr/v2 v2.17.2
++	github.com/vultr/govultr/v3 v3.9.0
+ 	github.com/yandex-cloud/go-genproto v0.0.0-20240318083951-4fe6125f286e
+ 	github.com/yandex-cloud/go-sdk v0.0.0-20240318084659-dfa50323a0b4
+ 	golang.org/x/crypto v0.24.0
+diff --git a/go.sum b/go.sum
+index e1ce69f44a..f73cd36a9c 100644
+--- a/go.sum
++++ b/go.sum
+@@ -669,8 +669,8 @@ github.com/valyala/bytebufferpool v1.0.0/go.mod h1:6bBcMArwyJ5K/AmCkWv1jt77kVWyC
+ github.com/valyala/fasttemplate v1.2.1/go.mod h1:KHLXt3tVN2HBp8eijSv/kGJopbvo7S+qRAEEKiv+SiQ=
+ github.com/vinyldns/go-vinyldns v0.9.16 h1:GZJStDkcCk1F1AcRc64LuuMh+ENL8pHA0CVd4ulRMcQ=
+ github.com/vinyldns/go-vinyldns v0.9.16/go.mod h1:5qIJOdmzAnatKjurI+Tl4uTus7GJKJxb+zitufjHs3Q=
+-github.com/vultr/govultr/v2 v2.17.2 h1:gej/rwr91Puc/tgh+j33p/BLR16UrIPnSr+AIwYWZQs=
+-github.com/vultr/govultr/v2 v2.17.2/go.mod h1:ZFOKGWmgjytfyjeyAdhQlSWwTjh2ig+X49cAp50dzXI=
++github.com/vultr/govultr/v3 v3.9.0 h1:63V/22mpfquRA5DenJ9EF0VozHg0k+X4dhUWcDXHPyc=
++github.com/vultr/govultr/v3 v3.9.0/go.mod h1:Rd8ebpXm7jxH3MDmhnEs+zrlYW212ouhx+HeUMfHm2o=
+ github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f/go.mod h1:N2zxlSyiKSe5eX1tZViRH5QA0qijqEDrYZiPEAiq3wU=
+ github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415/go.mod h1:GwrjFmJcFw6At/Gs6z4yjiIwzuJ1/+UwLxMQDVQXShQ=
+ github.com/xeipuuv/gojsonschema v1.2.0/go.mod h1:anYRn/JVcOK2ZgGU+IjEV4nwlhoK5sQluxsYJ78Id3Y=
+diff --git a/providers/dns/vultr/vultr.go b/providers/dns/vultr/vultr.go
+index f63abc5f06..c6e98709cb 100644
+--- a/providers/dns/vultr/vultr.go
++++ b/providers/dns/vultr/vultr.go
+@@ -12,7 +12,7 @@ import (
+ 
+ 	"github.com/go-acme/lego/v4/challenge/dns01"
+ 	"github.com/go-acme/lego/v4/platform/config/env"
+-	"github.com/vultr/govultr/v2"
++	"github.com/vultr/govultr/v3"
+ 	"golang.org/x/oauth2"
+ )
+ 
+@@ -110,9 +110,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
+ 		TTL:      d.config.TTL,
+ 		Priority: func(v int) *int { return &v }(0),
+ 	}
+-	_, err = d.client.DomainRecord.Create(ctx, zoneDomain, &req)
++
++	_, resp, err := d.client.DomainRecord.Create(ctx, zoneDomain, &req)
+ 	if err != nil {
+-		return fmt.Errorf("vultr: API call failed: %w", err)
++		return fmt.Errorf("vultr: %w", extendError(resp, err))
+ 	}
+ 
+ 	return nil
+@@ -157,9 +158,9 @@ func (d *DNSProvider) getHostedZone(ctx context.Context, domain string) (string,
+ 	var hostedDomain govultr.Domain
+ 
+ 	for {
+-		domains, meta, err := d.client.Domain.List(ctx, listOptions)
++		domains, meta, resp, err := d.client.Domain.List(ctx, listOptions)
+ 		if err != nil {
+-			return "", fmt.Errorf("API call failed: %w", err)
++			return "", extendError(resp, err)
+ 		}
+ 
+ 		for _, dom := range domains {
+@@ -201,9 +202,9 @@ func (d *DNSProvider) findTxtRecords(ctx context.Context, domain, fqdn string) (
+ 
+ 	var records []govultr.DomainRecord
+ 	for {
+-		result, meta, err := d.client.DomainRecord.List(ctx, zoneDomain, listOptions)
++		result, meta, resp, err := d.client.DomainRecord.List(ctx, zoneDomain, listOptions)
+ 		if err != nil {
+-			return "", records, fmt.Errorf("API call has failed: %w", err)
++			return "", records, extendError(resp, err)
+ 		}
+ 
+ 		for _, record := range result {
+@@ -234,3 +235,12 @@ func OAuthStaticAccessToken(client *http.Client, accessToken string) *http.Clien
+ 
+ 	return client
+ }
++
++func extendError(resp *http.Response, err error) error {
++	msg := "API call failed"
++	if resp != nil {
++		msg += fmt.Sprintf(" (%d)", resp.StatusCode)
++	}
++
++	return fmt.Errorf("%s: %w", msg, err)
++}
+diff --git a/providers/dns/vultr/vultr_test.go b/providers/dns/vultr/vultr_test.go
+index 964c096087..71d8ad414c 100644
+--- a/providers/dns/vultr/vultr_test.go
++++ b/providers/dns/vultr/vultr_test.go
+@@ -13,7 +13,7 @@ import (
+ 	"github.com/go-acme/lego/v4/platform/tester"
+ 	"github.com/stretchr/testify/assert"
+ 	"github.com/stretchr/testify/require"
+-	"github.com/vultr/govultr/v2"
++	"github.com/vultr/govultr/v3"
+ )
+ 
+ const envDomain = envNamespace + "TEST_DOMAIN"

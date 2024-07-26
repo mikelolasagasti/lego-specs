@@ -29,6 +29,7 @@ Summary:        Let's Encrypt/ACME client and library written in Go
 License:        MIT
 URL:            %{gourl}
 Source:         %{gosource}
+Patch:          db2ab55cdd6a979168ef96dc178568d5120430eb.patch
 
 %description %{common_description}
 
