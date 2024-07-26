@@ -77,6 +77,7 @@ done
          -d github.com/go-acme/lego/v4/providers/dns/lightsail \
          -d github.com/go-acme/lego/v4/providers/dns/otc \
          -d github.com/go-acme/lego/v4/providers/dns/route53 \
+         -d github.com/go-acme/lego/v4/providers/dns/sakuracloud \
          -d github.com/go-acme/lego/v4/providers/dns/zoneee
 %endif
 %endif
