@@ -64,7 +64,7 @@ for test in "TestDNSProviderManual" "TestLookupNameserversOK" "TestFindZoneByFqd
             "TestCheckAuthoritativeNssErr"  "TestDNSProvider_findZone" "TestDNSProvider_FindZoneAndRecordName" \
             "TestPresentNoExistingRR" "TestPresentWithExistingRR" "TestPresentSkipExistingRR" \
             "TestRemoveRecord_errors" "TestAddTXTRecord_errors" "TestDNSProvider_concurrentGetDNSEntries" \
-            "TestDNSProvider_concurrentAddDNSEntry" \\
+            "TestDNSProvider_concurrentAddDNSEntry" \
 ; do
 awk -i inplace '/^func.*'"$test"'\(/ { print; print "\tt.Skip(\"disabled failing test\")"; next}1' $(grep -rl $test)
 done
